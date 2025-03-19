@@ -1,5 +1,5 @@
 import sqlite3
-from sqlite3 import engine
+from contextlib import contextmanager
 
 connexion = sqlite3.connect("cycling.db")
 
@@ -46,11 +46,17 @@ cursor.execute("""
         FOREIGN KEY (athlete_id) REFERENCES athlete(athlete_id)
     )
 """)
-
-
+        
+        
+@contextmanager
 def db_connection():
-    connexion = sqlite3.connect("cycling.db")
-    try : 
-        yield connexion
-    finally : 
-        connexion.close()
+    conn = sqlite3.connect("cycling.db", check_same_thread=False)
+    conn.row_factory = sqlite3.Row 
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+def get_db():
+    with db_connection() as conn:
+        yield conn
