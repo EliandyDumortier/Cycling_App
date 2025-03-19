@@ -1,5 +1,16 @@
-from fastapi import FastAPI
-from endpoints.users import router as user_router
+from fastapi import FastAPI, APIRouter
+from database import get_db,init_db
+from endpoints import athletes,users,performances,stats
 
 app = FastAPI()
-app.include_router(user_router)
+
+#Adding the routers
+app.include_router(athletes.app)
+app.include_router(users.app)
+app.include_router(performances.app)
+app.include_router(stats.app)
+
+#Welcome message
+@app.get("/")
+def home():
+    return {"message": "Welcome to the Cycling management API"}

@@ -23,4 +23,3 @@ class CreateUserRequest(BaseModel) :
                 "role" : "athlete"
             }
         }        
-
