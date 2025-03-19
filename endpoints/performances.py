@@ -5,7 +5,7 @@ from database import get_db
 from pydantic import BaseModel
 import sqlite3
 
-app=APIRouter(prefix="/performances")
+router=APIRouter(prefix="/performances")
 
 
 #Schema for the performance
@@ -21,7 +21,7 @@ class Performance(BaseModel):
     athlete_id: int
 
 #POST create athlete performance
-@app.post('/create')
+@router.post('/create')
 def create_performance(performance: Performance,db:sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
     cursor = db.cursor()
     role=current_user.role
@@ -38,7 +38,7 @@ def create_performance(performance: Performance,db:sqlite3.Connection = Depends(
     
 
 #Post modify athlete performance
-@app.put('/update/<int:performance_id>')
+@router.put('/update/<int:performance_id>')
 def update_performance(performance_id: int, performance: Performance, db: sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
     cursor = db.cursor()
     role=current_user.role
@@ -52,7 +52,7 @@ def update_performance(performance_id: int, performance: Performance, db: sqlite
     return {f"Performance no.{performance_id} updated successfully"}
 
 #Post delete athlete performance
-@app.delete('/delete/<int:performance_id>')
+@router.delete('/delete/<int:performance_id>')
 def delete_performance(performance_id: int, db: sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
     cursor = db.cursor()
     role=current_user.role
@@ -65,7 +65,7 @@ def delete_performance(performance_id: int, db: sqlite3.Connection = Depends(get
     return {f"Performance no.{performance_id} deleted successfully"}
 
 #Get all performances (if coach) or get all performances of a specific athlete (if athlete)
-@app.get('/performances')
+@router.get('/performances')
 def get_performances(db: sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
     cursor = db.cursor()
     role=current_user.role

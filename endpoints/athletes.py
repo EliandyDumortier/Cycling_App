@@ -9,7 +9,7 @@ from enum import Enum
 
 
 
-app=APIRouter(prefix="/athletes")
+router=APIRouter(prefix="/athletes")
 
 class GENDERENUM(str,Enum):
     male="male"
@@ -26,7 +26,7 @@ class AthleteSchema(BaseModel):
 
 
 #POST CREATE ATHLETE
-@app.post('/create')
+@router.post('/create')
 def create_athlete(athlete: AthleteSchema,db: sqlite3.Connection = Depends(get_db),current_user=Depends(get_current_user)):
     cursor=db.cursor()
     role=current_user.role
@@ -45,7 +45,7 @@ def create_athlete(athlete: AthleteSchema,db: sqlite3.Connection = Depends(get_d
 
 
 #Get athlete list 
-@app.get('/athletes')
+@router.get('/athletes')
 def get_athletes(db: sqlite3.Connection = Depends(get_db),current_user=Depends(get_current_user)):
     role=current_user.role
     if role !="coach":
@@ -56,7 +56,7 @@ def get_athletes(db: sqlite3.Connection = Depends(get_db),current_user=Depends(g
 
 
 #UPDATE ATHLETE
-@app.put('/update/<int:athlete_id>')
+@router.put('/update/<int:athlete_id>')
 def update_athlete(athlete_id: int, athlete: AthleteSchema, db: sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
     role=current_user.role
     if role !="coach":
@@ -70,7 +70,7 @@ def update_athlete(athlete_id: int, athlete: AthleteSchema, db: sqlite3.Connecti
     return {f"Athlete no.{athlete_id} updated successfully"}
 
 #DELETE ATHLETE
-@app.delete('/delete/<int:athlete_id>')
+@router.delete('/delete/<int:athlete_id>')
 def delete_athlete(athlete_id: int, db: sqlite3.Connection = Depends(get_db),current_user=Depends(get_current_user)):
     role=current_user.role
     if role !="coach":
