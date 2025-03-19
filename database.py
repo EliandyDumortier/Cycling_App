@@ -56,3 +56,9 @@ def init_db():
                    
 
 
+def db_connection():
+    connexion = sqlite3.connect("cycling.db")
+    try : 
+        yield connexion
+    finally : 
+        connexion.close()
