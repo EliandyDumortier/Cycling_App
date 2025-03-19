@@ -2,3 +2,5 @@ fastapi
 passlib
 dotenv
 python-jose==3.4.0
+uvicorn
+pydantic
