@@ -16,6 +16,19 @@ cursor.execute("""
     )
 """)
 
+#Athlete table
+
+cursor.execute('''CREATE TABLE  [IF NOT EXIST] athlete(
+    athlete_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    gender BOOLEAN NOT NULL,
+    age INTEGER NOT NULL,
+    weight REAL NOT NULL,
+    height REAL NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+               )'''
+)
 
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS performance (
@@ -31,3 +44,5 @@ cursor.execute("""
         FOREIGN KEY (athlete_id) REFERENCES athlete(athlete_id)
     )
 """)
+
+
