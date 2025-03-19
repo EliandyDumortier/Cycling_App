@@ -7,16 +7,11 @@ app = FastAPI()
 init_db()
 
 #Adding the routers
-app.include_router(athletes.router)
+app.include_router(athletes.app)
+app.include_router(users.app)
+app.include_router(performances.app)
 
 #Welcome message
 @app.get("/")
 def home():
     return {"message": "Welcome to the Cycling management API"}
-
-
-
-#app.include_router(users.router,prefix="/users")    
-#app.include_router(performances.router,prefix="/performances")
-#pp.include_router(users.app)
-#app.include_router(performances.app)#

@@ -1,5 +1,8 @@
 import sqlite3
 
+connexion = sqlite3.connect("cycling.db")
+
+
 def get_db():
     connexion = sqlite3.connect("cycling.db")
     connexion.row_factory = sqlite3.Row
