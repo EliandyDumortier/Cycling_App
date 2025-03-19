@@ -1,70 +1,94 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from utils import create_acces_token, get_password_hash, authenticate, get_current_user, db_dependency, bcrypt_context
+from sqlite3 import Connection
+from utils import create_access_token, authenticate, get_current_user, bcrypt_context
 from schemas import CreateUserRequest
+from database import get_db
 import os
 from dotenv import load_dotenv
-
+import sqlite3
+from fastapi.security import OAuth2PasswordRequestForm
 
 
 load_dotenv()
-COACH_VERIFICATION_CODE = os.getenv("COACH_VERIFICATION_CODE", None)
+COACH_VERIFICATION_CODE = os.getenv("COACH_VERIFICATION_CODE")
 
 
-app = APIRouter(prefix="/user")
-
-
-
-@app.get("/auth/")
-def login(email, password, db = db_dependency) : 
-    user = authenticate(email, password, db)
-    if not user : 
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Nom d'utilisateur ou mot de passe incorrect, veuillez corriger votre saisie", headers={"WWW-Authenticate": "Bearer"})
-    token_data = {
-        "sub" : user.email
-    }
-    acces_token = create_acces_token(data=token_data)
-    return {"access_token": acces_token, "token_type": "bearer"}
+router = APIRouter(prefix="/user")
 
 
 
-@app.get("/users/")
-def get_users(db = db_dependency, current_user = Depends(get_current_user)) : 
-    role = current_user.role
-    if role == "admin" : 
-        result = db.Cursor().Execute("SELECT * FROM user").fetchall()
-        return result
-    else :
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Accès refusé, vous n'avez pas les droits nécessairespour accéder à cette ressource")
+@router.post("/auth")
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Connection = Depends(get_db)):
+    """Endpoint d'authentification"""
+    try:
+        user = await authenticate(form_data.username, form_data.password, db)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Identifiants incorrects")
+            
+        token_data = {"sub": user["email"]}
+        access_token = create_access_token(token_data)
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur serveur: {str(e)}")
 
 
+@router.get("/users")
+async def get_users(db: Connection = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    try:
+        if current_user["role"] != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Accès refusé"
+            )
+            
+        cursor = db.cursor()
+        cursor.execute("SELECT user_id, name, email, role FROM user")
+        users = cursor.fetchall()
+        cursor.close()
+        
+        return {"users": users}
+        
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Erreur base de données: {str(e)}")
 
-@app.post("/create_user/")
-def create_user(create_user_request : CreateUserRequest, db = db_dependency) : 
-    name = create_user_request.name
-    email = create_user_request.email
-    password = create_user_request.password
-    password_confirmation = create_user_request.password_confirmation
-    role = create_user_request.role
-    if role == "coach" : 
-        coach_verification_code = create_user_request.coach_verification_code
+
+@router.post("/create_user")
+async def create_user(create_user_request: CreateUserRequest, db: Connection = Depends(get_db)) :
+    """Création d'un nouvel utilisateur"""
+    cursor = db.cursor()
+    try:
+        if create_user_request.password != create_user_request.password_confirmation:
+            raise HTTPException(status_code=400, detail="Les mots de passe ne correspondent pas")
+            
+        if create_user_request.role == "coach":
+            if create_user_request.coach_verification_code != COACH_VERIFICATION_CODE:
+                raise HTTPException(status_code=400, detail="Code coach invalide")
+
+        cursor.execute(
+            "SELECT email FROM user WHERE email = ?",
+            (create_user_request.email,))
+        if cursor.fetchone():
+            raise HTTPException(status_code=400, detail="Email déjà utilisé")
+
+        hashed_password = bcrypt_context.hash(create_user_request.password)
+        
+        cursor.execute(
+            """INSERT INTO user (name, email, password, role)
+            VALUES (?, ?, ?, ?)""",
+            (create_user_request.name, create_user_request.email, hashed_password, create_user_request.role))
+        db.commit()
+        
+        return {"message": "Utilisateur créé avec succès"}
+        
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(status_code=400, detail=f"Erreur d'intégrité: {str(e)}")
     
-    if password != password_confirmation : 
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail = "Les mots de passes ne correspondent pas")
-    
-    if coach_verification_code != COACH_VERIFICATION_CODE :
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail = "Le code de vérification du coach est invalide")
-    
-    if password == password_confirmation and coach_verification_code == COACH_VERIFICATION_CODE : 
-        hashed_password = bcrypt_context.hash(password)
-        db.Cursor().Execute(f"""
-            INSERT INTO user ('name', 'email', 'password', 'role')
-            VALUES (?,?,?,?)""", (name, email, hashed_password, role))
-        return {"message" : f"Utilisateur {name} créé avec succès !"}
-
-
-
-
-
-
-
-
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erreur serveur: {str(e)}")
+    finally:
+        cursor.close()

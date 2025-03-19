@@ -8,7 +8,8 @@ class CreateUserRequest(BaseModel) :
     email : EmailStr = Field(description="Adresse email")
     password : str = Field(min_length=8, description="Votre mot de passe. Longueur monimale de 8 caractères")
     password_confirmation : str = Field(description="Confirmation du mot de passe. Longueur monimale de 8 caractères")
-    role: Literal["coach", "athlete"] = Field(...)
+    # role: Literal["coach", "athlete", "admin"] = Field(...)
+    role: str = Field(description="coach, athlete")
     if role == "coach" : 
         coach_verification_code : str = Field(description="Votre code de vérification de coach")
 
@@ -22,11 +23,3 @@ class CreateUserRequest(BaseModel) :
                 "role" : "athlete"
             }
         }        
-
-
-
-
-
-
-
-
