@@ -1,0 +1,17 @@
+{
+  "name": "bonus_sbj",
+  "power.max": 348.0,
+  "hr.max": 180.0,
+  "vo2.max": 4510.0,
+  "rf.max": 49.0,
+  "vo2.class": [75, 86],
+  "csv_trial_1": [
+    "bonus_sbj_incremental.csv",
+    "bonus_sbj_4x.csv"
+  ],
+  "csv_trial_2": [
+    "bonus_sbj_incremental.csv",
+    "bonus_sbj_8x.csv"
+  ],
+  "input": ["time", "power", "vo2", "cadence", "hr", "rf"]
+}
