@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlite3 import Connection
 from utils import create_access_token, authenticate, get_current_user, bcrypt_context
 from schemas import CreateUserRequest
@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 import sqlite3
 from fastapi.security import OAuth2PasswordRequestForm
+
 
 
 load_dotenv()
@@ -20,13 +21,13 @@ router = APIRouter(prefix="/user")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Connection = Depends(get_db)):
     """Endpoint d'authentification"""
     try:
-        user = await authenticate(form_data.username, form_data.password, db)
+        user = authenticate(form_data.username, form_data.password, db)
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Identifiants incorrects")
             
         token_data = {"sub": user["email"]}
         access_token = create_access_token(token_data)
-        
+                
         return {
             "access_token": access_token,
             "token_type": "bearer"
@@ -38,7 +39,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Connection
 @router.get("/users")
 async def get_users(db: Connection = Depends(get_db), current_user: dict = Depends(get_current_user)):
     try:
-        if current_user["role"] != "admin":
+        if current_user["role"] != "admin" and current_user["role"] != "coach" :
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Accès refusé"

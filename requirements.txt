@@ -5,3 +5,4 @@ python-jose==3.4.0
 uvicorn
 pydantic
 python-multipart
+requests
