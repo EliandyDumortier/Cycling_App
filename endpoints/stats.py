@@ -6,24 +6,24 @@ from utils import get_current_user
 import sqlite3
 
 #creating the router
-app=APIRouter(prefix="/stats")
+router=APIRouter(prefix="/stats")
 
 #athlete with the highest Vo2max
-@app.get('/vo2max')
+@router.get('/vo2max')
 def vo2max(db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
     cursor.execute("SELECT athlete_id, name, MAX(vo2max) FROM performance group by athlete_id,name")
     return cursor.fetchone()
 
 #the most powerful athlete
-@app.get('/ppo')
+@router.get('/ppo')
 def ppo(db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
     cursor.execute("SELECT athlete_id, name, MAX(ppo) FROM performance group by athlete_id,name")
     return cursor.fetchone()
 
-#athlete with the best rapport ppo/weight
-@app.get('/weightpower')
+#athlete with the best rrouterort ppo/weight
+@router.get('/weightpower')
 def weightpower(db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
     cursor.execute("SELECT athlete_id, name, MAX(ppo/weight) FROM performance group by athlete_id,name")

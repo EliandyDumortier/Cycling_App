@@ -1,14 +1,13 @@
 from fastapi import FastAPI, APIRouter
-from database import get_db,init_db
 from endpoints import athletes,users,performances,stats
 
 app = FastAPI()
 
 #Adding the routers
-app.include_router(athletes.app)
-app.include_router(users.app)
-app.include_router(performances.app)
-app.include_router(stats.app)
+app.include_router(athletes.router)
+app.include_router(users.router)
+app.include_router(performances.router)
+app.include_router(stats.router)
 
 #Welcome message
 @app.get("/")

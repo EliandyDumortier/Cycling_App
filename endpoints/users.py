@@ -10,7 +10,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 
 load_dotenv()
-COACH_VERIFICATION_CODE = os.getenv("COACH_VERIFICATION_CODE")
 
 
 router = APIRouter(prefix="/user")
@@ -39,7 +38,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Connection
 @router.get("/users")
 async def get_users(db: Connection = Depends(get_db), current_user: dict = Depends(get_current_user)):
     try:
-        if current_user["role"] != "admin":
+        if current_user["role"] != "admin" and current_user["role"] != "coach" :
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Accès refusé"
@@ -64,10 +63,6 @@ async def create_user(create_user_request: CreateUserRequest, db: Connection = D
         if create_user_request.password != create_user_request.password_confirmation:
             raise HTTPException(status_code=400, detail="Les mots de passe ne correspondent pas")
             
-        if create_user_request.role == "coach":
-            if create_user_request.coach_verification_code != COACH_VERIFICATION_CODE:
-                raise HTTPException(status_code=400, detail="Code coach invalide")
-
         cursor.execute(
             "SELECT email FROM user WHERE email = ?",
             (create_user_request.email,))
