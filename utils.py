@@ -12,7 +12,7 @@ from sqlite3 import Connection
 load_dotenv()
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
-SECRET_KEY = os.getenv("SECRET_KEY", "secret-fallback")
+SECRET_KEY = os.getenv("SECRET_KEY", None)
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
 
