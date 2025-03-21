@@ -4,6 +4,7 @@ import json
 
 
 
+
 def insert_data(table_name : str, data : tuple[str|int|float|bool], con : Connection = get_db()) :
     connexion = next(con) 
     try : 

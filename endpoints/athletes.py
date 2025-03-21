@@ -29,8 +29,8 @@ class AthleteSchema(BaseModel):
 @router.post('/create')
 def create_athlete(athlete: AthleteSchema,db: sqlite3.Connection = Depends(get_db),current_user=Depends(get_current_user)):
     cursor=db.cursor()
-    role=current_user.role
-    if role !="coach":
+    role=current_user["role"]
+    if role !="coach" and role !="admin":
         raise HTTPException(status_code=401, detail="You are not allowed to perform this action")
     try:
         cursor.execute(
@@ -47,8 +47,8 @@ def create_athlete(athlete: AthleteSchema,db: sqlite3.Connection = Depends(get_d
 #Get athlete list 
 @router.get('/athletes')
 def get_athletes(db: sqlite3.Connection = Depends(get_db),current_user=Depends(get_current_user)):
-    role=current_user.role
-    if role !="coach":
+    role=current_user["role"]
+    if role !="coach" and role !="admin":
         raise HTTPException(status_code=401, detail="You are not allowed to perform this action")
     cursor = db.cursor()
     cursor.execute("SELECT * FROM athlete")
@@ -58,8 +58,8 @@ def get_athletes(db: sqlite3.Connection = Depends(get_db),current_user=Depends(g
 #UPDATE ATHLETE
 @router.put('/update/<int:athlete_id>')
 def update_athlete(athlete_id: int, athlete: AthleteSchema, db: sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
-    role=current_user.role
-    if role !="coach":
+    role=current_user["role"]
+    if role !="coach" and role !="admin":
         raise HTTPException(status_code=401, detail="You are not allowed to perform this action")
     cursor = db.cursor()
     cursor.execute("UPDATE athlete SET name=?, gender=?, age=?, weight=?, height=?, user_id=? WHERE athlete_id=?",
@@ -72,8 +72,8 @@ def update_athlete(athlete_id: int, athlete: AthleteSchema, db: sqlite3.Connecti
 #DELETE ATHLETE
 @router.delete('/delete/<int:athlete_id>')
 def delete_athlete(athlete_id: int, db: sqlite3.Connection = Depends(get_db),current_user=Depends(get_current_user)):
-    role=current_user.role
-    if role !="coach":
+    role=current_user["role"]
+    if role !="coach" and role !="admin":
         raise HTTPException(status_code=401, detail="You are not allowed to perform this action")
     cursor = db.cursor()
     cursor.execute("DELETE FROM athlete WHERE athlete_id=?", (athlete_id,))
