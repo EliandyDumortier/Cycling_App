@@ -74,6 +74,11 @@ def get_performances(db: sqlite3.Connection = Depends(get_db), current_user=Depe
         performances = cursor.fetchall()
         return performances
     else:
-        cursor.execute("SELECT * FROM performance WHERE athlete_id=?", (current_user.athlete_id,))
+        query = f"""
+            select * from performance p 
+            inner join user u on p.athlete_id = u.user_id
+            where user_id = ?
+        """
+        cursor.execute(query, (current_user["user_id"],))
         performances = cursor.fetchall()
         return performances

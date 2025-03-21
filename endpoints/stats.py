@@ -22,7 +22,7 @@ def ppo(db: sqlite3.Connection = Depends(get_db)):
     cursor.execute("SELECT athlete_id, name, MAX(ppo) FROM performance group by athlete_id,name")
     return cursor.fetchone()
 
-#athlete with the best rrouterort ppo/weight
+#athlete with the best rapport ppo/weight
 @router.get('/weightpower')
 def weightpower(db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
