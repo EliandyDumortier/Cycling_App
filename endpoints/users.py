@@ -21,7 +21,7 @@ router = APIRouter(prefix="/user")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Connection = Depends(get_db)):
     """Endpoint d'authentification"""
     try:
-        user = authenticate(form_data.username, form_data.password, db)
+        user = await authenticate(form_data.username, form_data.password, db)
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Identifiants incorrects")
             

@@ -60,7 +60,20 @@ def init_db():
                    
 
 
-if __name__ == "__main__" : 
+@contextmanager
+def db_connection():
+    conn = sqlite3.connect("cycling.db", check_same_thread=False)
+    conn.row_factory = sqlite3.Row 
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+def get_db():
+    with db_connection() as conn:
+        yield conn
+
+if __name__ == "__main" : 
   #initializing the database
   init_db()
 

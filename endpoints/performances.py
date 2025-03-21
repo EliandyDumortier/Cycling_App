@@ -24,7 +24,7 @@ class Performance(BaseModel):
 @router.post('/create')
 def create_performance(performance: Performance,db:sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
     cursor = db.cursor()
-    role=current_user.role
+    role=current_user["role"]
     if role !="coach":
         raise HTTPException(status_code=401, detail="You are not allowed to perform this action")
     try:
@@ -41,7 +41,7 @@ def create_performance(performance: Performance,db:sqlite3.Connection = Depends(
 @router.put('/update/<int:performance_id>')
 def update_performance(performance_id: int, performance: Performance, db: sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
     cursor = db.cursor()
-    role=current_user.role
+    role=current_user["role"]
     if role !="coach":
         raise HTTPException(status_code=401, detail="You are not allowed to perform this action")
     cursor.execute("UPDATE performance SET vo2max=?, hr_max=?, rf_max=?, cadence_max=?, ppo=?, p1=?, p2=?, p3=?, athlete_id=? WHERE performance_id=?",
@@ -55,7 +55,7 @@ def update_performance(performance_id: int, performance: Performance, db: sqlite
 @router.delete('/delete/<int:performance_id>')
 def delete_performance(performance_id: int, db: sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
     cursor = db.cursor()
-    role=current_user.role
+    role=current_user["role"]
     if role !="coach":
         raise HTTPException(status_code=401, detail="You are not allowed to perform this action")
     cursor.execute("DELETE FROM performance WHERE performance_id=?", (performance_id,))
@@ -68,12 +68,17 @@ def delete_performance(performance_id: int, db: sqlite3.Connection = Depends(get
 @router.get('/performances')
 def get_performances(db: sqlite3.Connection = Depends(get_db), current_user=Depends(get_current_user)):
     cursor = db.cursor()
-    role=current_user.role
+    role=current_user["role"]
     if role=="coach":
         cursor.execute("SELECT * FROM performance")
         performances = cursor.fetchall()
         return performances
     else:
-        cursor.execute("SELECT * FROM performance WHERE athlete_id=?", (current_user.athlete_id,))
+        query = f"""
+            select * from performance p 
+            inner join user u on p.athlete_id = u.user_id
+            where user_id = ?
+        """
+        cursor.execute(query, (current_user["user_id"],))
         performances = cursor.fetchall()
         return performances
