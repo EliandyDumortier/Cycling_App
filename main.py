@@ -1,5 +1,4 @@
 from fastapi import FastAPI, APIRouter
-from database import get_db,init_db
 from endpoints import athletes,users,performances,stats
 
 app = FastAPI()
